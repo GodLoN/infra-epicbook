@@ -52,14 +52,14 @@ steps:
         SSH_PUBLIC_KEY="$(cat "$(sshPublicKey.secureFilePath)")"
 
         cat > terraform.tfvars <<TFVARS
-location              = "West US 2"
-project_name          = "epicbook"
-admin_username        = "azureadmin"
-ssh_public_key        = "${SSH_PUBLIC_KEY}"
-mysql_admin_username  = "$(EPICBOOK_MYSQL_USERNAME)"
-mysql_admin_password  = "$(EPICBOOK_MYSQL_PASSWORD)"
-vm_size               = "Standard_D2as_v7"
-TFVARS
+        location              = "West US 2"
+        project_name          = "epicbook"
+        admin_username        = "azureadmin"
+        ssh_public_key        = "${SSH_PUBLIC_KEY}"
+        mysql_admin_username  = "$(EPICBOOK_MYSQL_USERNAME)"
+        mysql_admin_password  = "$(EPICBOOK_MYSQL_PASSWORD)"
+        vm_size               = "Standard_D2as_v7"
+        TFVARS
 
         chmod 600 terraform.tfvars
 
