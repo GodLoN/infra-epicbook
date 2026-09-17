@@ -37,14 +37,14 @@ steps:
 
   - task: AzureCLI@2
     displayName: 'Terraform Init, Plan, Apply and Outputs'
+    env:
+      EPICBOOK_MYSQL_USERNAME: $(EPICBOOK_MYSQL_USERNAME)
+      EPICBOOK_MYSQL_PASSWORD: $(EPICBOOK_MYSQL_PASSWORD)
     inputs:
       azureSubscription: '$(azureServiceConnection)'
       scriptType: 'bash'
       scriptLocation: 'inlineScript'
       addSpnToEnvironment: true
-      env:
-        EPICBOOK_MYSQL_USERNAME: $(EPICBOOK_MYSQL_USERNAME)
-        EPICBOOK_MYSQL_PASSWORD: $(EPICBOOK_MYSQL_PASSWORD)
       inlineScript: |
         set -euo pipefail
 
