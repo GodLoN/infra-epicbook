@@ -11,16 +11,29 @@ variables:
 steps:
   - checkout: self
 
-  - task: TerraformInstaller@1
-    displayName: 'Install Terraform'
-    inputs:
-      terraformVersion: '1.9.8'
+  - bash: |
+      set -euo pipefail
+
+      echo "===== INSTALL TERRAFORM 1.9.8 ====="
+
+      TERRAFORM_VERSION="1.9.8"
+      TERRAFORM_ZIP="terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
+      TERRAFORM_URL="https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/${TERRAFORM_ZIP}"
+
+      curl -fsSL "$TERRAFORM_URL" -o "/tmp/${TERRAFORM_ZIP}"
+
+      unzip -o "/tmp/${TERRAFORM_ZIP}" -d /tmp/terraform-install
+
+      sudo install -m 0755 /tmp/terraform-install/terraform /usr/local/bin/terraform
+
+      terraform version
+    displayName: 'Install Terraform 1.9.8'
 
   - task: DownloadSecureFile@1
     name: sshPublicKey
     displayName: 'Download SSH Public Key'
     inputs:
-      secureFile: 'epicbook-ssh-public-key'
+      secureFile: 'epicbook-ssh-public-key.pub'
 
   - task: AzureCLI@2
     displayName: 'Terraform Init, Plan, Apply and Outputs'
@@ -29,6 +42,9 @@ steps:
       scriptType: 'bash'
       scriptLocation: 'inlineScript'
       addSpnToEnvironment: true
+      env:
+        EPICBOOK_MYSQL_USERNAME: $(EPICBOOK_MYSQL_USERNAME)
+        EPICBOOK_MYSQL_PASSWORD: $(EPICBOOK_MYSQL_PASSWORD)
       inlineScript: |
         set -euo pipefail
 
@@ -49,23 +65,17 @@ steps:
         echo
         echo "===== PREPARE TERRAFORM VARIABLES ====="
 
-        SSH_PUBLIC_KEY="$(cat "$(sshPublicKey.secureFilePath)")"
+        export TF_VAR_location="West US 2"
+        export TF_VAR_project_name="epicbook"
+        export TF_VAR_admin_username="azureadmin"
+        export TF_VAR_ssh_public_key="$(cat "$(sshPublicKey.secureFilePath)")"
+        export TF_VAR_mysql_admin_username="$EPICBOOK_MYSQL_USERNAME"
+        export TF_VAR_mysql_admin_password="$EPICBOOK_MYSQL_PASSWORD"
+        export TF_VAR_vm_size="Standard_D2as_v7"
 
-        cat > terraform.tfvars <<TFVARS
-        location              = "West US 2"
-        project_name          = "epicbook"
-        admin_username        = "azureadmin"
-        ssh_public_key        = "${SSH_PUBLIC_KEY}"
-        mysql_admin_username  = "$(EPICBOOK_MYSQL_USERNAME)"
-        mysql_admin_password  = "$(EPICBOOK_MYSQL_PASSWORD)"
-        vm_size               = "Standard_D2as_v7"
-        TFVARS
-
-        chmod 600 terraform.tfvars
-
-        echo "Terraform variable file prepared."
+        echo "Terraform variables prepared."
         echo "SSH public key loaded from Secure Files."
-        echo "MySQL credentials loaded from pipeline variables."
+        echo "MySQL credentials loaded as protected pipeline variables."
 
         echo
         echo "===== TERRAFORM INIT ====="
@@ -99,6 +109,6 @@ steps:
 
         echo
         echo "===== CLEANUP ====="
-        rm -f terraform.tfvars tfplan
+        rm -f tfplan
 
-        echo "Temporary Terraform files removed."
+        echo "Temporary Terraform plan removed."
