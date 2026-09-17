@@ -1,0 +1,7 @@
+location              = "West US 2"
+project_name          = "epicbook"
+admin_username        = "azureadmin"
+ssh_public_key        = "REPLACE_WITH_YOUR_SSH_PUBLIC_KEY"
+mysql_admin_username  = "epicbookadmin"
+mysql_admin_password  = "REPLACE_WITH_A_STRONG_PASSWORD"
+vm_size               = "Standard_D2as_v7"
